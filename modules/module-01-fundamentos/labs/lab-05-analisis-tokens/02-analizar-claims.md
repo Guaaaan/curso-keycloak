@@ -12,11 +12,13 @@ Comprender el significado de los principales claims incluidos en el `access_toke
 
 ## 📋 Localizar el Payload
 
-En la herramienta utilizada en el paso anterior, identifica la sección **Payload** del token.
+En la herramienta utilizada en el paso anterior (por ejemplo jwt.io), identifica la sección **Payload** del token.
 
 ---
 
 ## 🔎 Claims más importantes
+
+---
 
 ### iss (Issuer)
 
@@ -28,25 +30,48 @@ Debe tener un valor similar a:
 http://localhost:8080/realms/training
 ```
 
+Esto confirma que el token fue emitido por el realm correcto.
+
 ---
 
 ### sub (Subject)
 
 Identificador único del usuario autenticado dentro del realm.
 
-No es necesariamente el username.
+Es un identificador interno (UUID), no necesariamente el username.
+
+Este valor debe ser estable y único por usuario.
+
+---
+
+### azp (Authorized Party)
+
+Indica qué cliente solicitó el token.
+
+En este laboratorio debe mostrar:
+
+```
+spa-client
+```
+
+Este es el cliente que inició el flujo Authorization Code.
 
 ---
 
 ### aud (Audience)
 
-Indica para qué cliente está destinado el token.
+Indica para qué recurso está destinado el token.
 
-Debe incluir:
+⚠️ En configuraciones por defecto de Keycloak, puede aparecer:
 
 ```
-spa-client
+account
 ```
+
+Esto es normal.
+
+`aud` no siempre coincide con el cliente que solicitó el token.
+El cliente que lo solicitó se identifica mediante el claim `azp`.
 
 ---
 
@@ -56,11 +81,15 @@ Marca el momento exacto en el que el token dejará de ser válido.
 
 Está expresado en formato UNIX timestamp.
 
+Permite verificar que el token no ha expirado.
+
 ---
 
 ### iat (Issued At)
 
 Indica cuándo fue emitido el token.
+
+También está expresado en formato UNIX timestamp.
 
 ---
 
@@ -73,6 +102,8 @@ Debe mostrar:
 ```
 user1
 ```
+
+Este claim proviene de la información del usuario en el realm.
 
 ---
 
@@ -88,14 +119,19 @@ Ejemplo:
 }
 ```
 
+Estos roles pueden utilizarse posteriormente para decisiones de autorización en APIs.
+
 ---
 
 ## 🧠 Qué estamos validando
 
-* El token pertenece al realm correcto.
-* El token fue emitido para el cliente correcto.
-* El usuario autenticado es el esperado.
-* El token tiene fecha de expiración.
-* Los roles están presentes en el payload.
+* El token pertenece al realm correcto (`iss`).
+* El token fue solicitado por el cliente correcto (`azp`).
+* El token está destinado a un recurso válido (`aud`).
+* El usuario autenticado es el esperado (`preferred_username`, `sub`).
+* El token tiene fecha de expiración (`exp`).
+* Los roles están presentes en el payload (`realm_access`).
 
-En el siguiente paso validaremos la firma del token utilizando el endpoint JWKS.
+---
+
+En el siguiente paso validaremos la firma del token utilizando el endpoint JWKS para comprobar que el token no ha sido modificado y fue realmente emitido por el realm.
