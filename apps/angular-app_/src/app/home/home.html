@@ -1,1 +1,18 @@
 <p>home works!</p>
+
+<hr>
+
+<button (click)="callBackend()">
+  Call Protected API
+</button>
+
+
+<div *ngIf="apiResponse">
+  <h3>API Response</h3>
+  <pre>{{ apiResponse | json }}</pre>
+</div>
+
+<div *ngIf="apiError">
+  <h3 style="color:red;">Error</h3>
+  <pre>{{ apiError | json }}</pre>
+</div>
