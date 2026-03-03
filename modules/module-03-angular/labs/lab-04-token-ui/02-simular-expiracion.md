@@ -140,3 +140,47 @@ Ya sabemos:
 * Cómo leer sus claims.
 * Cómo calcular su expiración.
 * Qué ocurre cuando está cerca de expirar.
+
+# codigo con observables para validar refresco en tiempo real
+
+'''
+
+
+import { AsyncPipe, CommonModule } from '@angular/common';
+import { Component, inject } from '@angular/core';
+import Keycloak from 'keycloak-js';
+import { interval, map } from 'rxjs';
+
+
+@Component({
+  selector: 'app-protected',
+  imports: [CommonModule, AsyncPipe],
+  templateUrl: './protected.html',
+  styleUrl: './protected.css',
+})
+export class Protected {
+  private keycloak = inject(Keycloak);
+  tokenParsed = this.keycloak.tokenParsed;
+  secondsRemaining = this.tokenParsed?.exp ? this.tokenParsed.exp - Math.floor(Date.now() / 1000) : 0;
+
+
+secondsRemaining$ = interval(1000).pipe(
+      map(() => {        
+        this.keycloak.updateToken(280).then(refreshed => {
+          if (refreshed) {
+            console.log('Token refreshed');
+          } else {
+            console.log('Token valid, no need to refresh');
+          }
+        })
+        .catch(() => {        console.error('Failed to refresh token');
+        });
+        const exp = this.keycloak.tokenParsed?.exp ?? 0;
+        const now = Math.floor(Date.now() / 1000);
+        return exp - now;
+
+      })      
+  );
+
+}
+'''
